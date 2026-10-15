@@ -1,0 +1,19 @@
+# Environment & Sensitive credentials
+config/config.env.php
+.env
+
+# Temporary / scratch scripts
+debug_users.php
+fix_passwords.php
+
+# Dependencies
+node_modules/
+vendor/
+
+# Operating System & IDE artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.log

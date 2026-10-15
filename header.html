@@ -1,0 +1,168 @@
+<!-- ── Preloader ────────────────────────────────────────── -->
+<div id="site-preloader" class="fixed inset-0 z-[9999] bg-[#1a1a2e] flex items-center justify-center transition-opacity duration-700 pointer-events-none">
+  <div class="relative flex flex-col items-center">
+    <!-- Pulse ring -->
+    <div class="absolute inset-0 w-24 h-24 bg-[#efac3a]/20 rounded-full animate-ping"></div>
+    <!-- Logo -->
+    <img src="assets/images/logo.png" alt="Loading..." class="h-20 w-auto relative z-10 animate-pulse">
+  </div>
+</div>
+
+<style>
+  @keyframes pulse-custom {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+  }
+  .animate-pulse { animation: pulse-custom 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  #site-preloader.loaded { opacity: 0; pointer-events: none; }
+</style>
+
+<script>
+  window.addEventListener('load', function() {
+    const preloader = document.getElementById('site-preloader');
+    if (preloader) {
+      setTimeout(() => {
+        preloader.classList.add('loaded');
+        setTimeout(() => {
+          preloader.style.display = 'none';
+        }, 700);
+      }, 300);
+    }
+  });
+</script>
+
+<!-- ========================================================
+     HEADER / NAVIGATION
+     Save as: header.html
+     PHP include: <?php include 'header.html'; ?>
+======================================================== -->
+<header id="site-header" class="bg-white sticky top-0 z-50 shadow-md">
+  <div class="max-w-screen-xl mx-auto px-6 lg:px-10">
+    <div class="flex items-center justify-between h-18 py-3">
+
+      <!-- ── Logo ─────────────────────────────────────────── -->
+      <a href="index.php" class="flex items-center shrink-0">
+        <img src="assets/images/logo.png" alt="I Tech IT Solutions" class="h-14 w-auto object-contain">
+      </a>
+
+      <!-- ── Center nav (desktop) ──────────────────────────── -->
+      <nav id="desktop-nav" class="hidden lg:flex items-center gap-1">
+        <a href="index.php"
+           class="nav-link px-4 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">
+          Home
+        </a>
+        <a href="solutions.php"
+           class="nav-link px-4 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">
+          Solutions
+        </a>
+        <a href="services.php"
+           class="nav-link px-4 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">
+          Services
+        </a>
+        <a href="products.php"
+           class="nav-link px-4 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">
+          Products
+        </a>
+        <a href="public/about.php"
+           class="nav-link px-4 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">
+          Company
+        </a>
+      </nav>
+
+      <!-- ── Right-side actions (desktop) ─────────────────── -->
+      <div id="desktop-actions" class="hidden lg:flex items-center gap-2">
+
+        <!-- Primary CTA -->
+        <a href="quote.php"
+           class="px-5 py-2 bg-[#5d1d1f] text-white text-sm font-bold rounded-full shadow hover:bg-[#4a1517] hover:shadow-lg transition-all duration-200 whitespace-nowrap border border-[#efac3a]/20">
+          Get a Quote
+        </a>
+
+        <!-- Secondary links -->
+        <a href="support.php"
+           class="px-3 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-slate-100 transition-all duration-200 whitespace-nowrap">
+          Technical Support
+        </a>
+        <a href="contact.php"
+           class="px-3 py-2 text-sm font-semibold text-[#1a1a2e] rounded-full hover:bg-slate-100 transition-all duration-200">
+          Contact
+        </a>
+
+        <!-- Download Brochure -->
+        <a href="brochure.pdf" target="_blank"
+           class="flex items-center gap-1.5 px-4 py-2 border-2 border-[#5d1d1f] text-[#5d1d1f] text-sm font-bold rounded-full hover:bg-[#5d1d1f] hover:text-white transition-all duration-200 whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 3v12"/>
+          </svg>
+          Brochure
+        </a>
+      </div>
+
+      <!-- ── Hamburger (mobile) ─────────────────────────────── -->
+      <button id="hamburger-btn"
+              aria-label="Open menu"
+              aria-expanded="false"
+              class="lg:hidden p-2 rounded-lg text-[#1a1a2e] hover:bg-slate-100 transition-colors duration-200">
+        <svg id="icon-open" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+    </div><!-- /flex row -->
+  </div><!-- /container -->
+
+  <!-- ── Mobile Drawer ─────────────────────────────────────── -->
+  <div id="mobile-menu"
+       class="lg:hidden hidden border-t border-slate-100 bg-white shadow-lg">
+    <div class="max-w-screen-xl mx-auto px-6 py-4 flex flex-col gap-1">
+
+      <!-- Nav links -->
+      <a href="index.php"   class="mobile-nav-link py-3 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">Home</a>
+      <a href="solutions.php" class="mobile-nav-link py-3 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">Solutions</a>
+      <a href="services.php"  class="mobile-nav-link py-3 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">Services</a>
+      <a href="products.php"  class="mobile-nav-link py-3 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">Products</a>
+      <a href="public/about.php"   class="mobile-nav-link py-3 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] hover:bg-[#5d1d1f]/10 hover:text-[#5d1d1f] transition-all duration-200">About Us</a>
+
+      <hr class="my-2 border-slate-100"/>
+
+      <!-- Action buttons (stacked) -->
+      <a href="quote.php"
+         class="py-3 px-4 bg-[#5d1d1f] text-white text-sm font-bold rounded-full text-center shadow hover:bg-[#4a1517] transition-all duration-200 border border-[#efac3a]/20">
+        Get a Quote
+      </a>
+      <a href="support.php"
+         class="py-3 px-4 text-sm font-semibold text-[#1a1a2e] rounded-xl text-center hover:bg-slate-100 transition-all duration-200">
+        Technical Support
+      </a>
+      <a href="contact.php"
+         class="py-3 px-4 text-sm font-semibold text-[#1a1a2e] rounded-xl text-center hover:bg-slate-100 transition-all duration-200">
+        Contact
+      </a>
+      <a href="brochure.pdf" target="_blank"
+         class="py-3 px-4 border-2 border-[#5d1d1f] text-[#5d1d1f] text-sm font-bold rounded-full text-center hover:bg-[#5d1d1f] hover:text-white transition-all duration-200">
+        Download Brochure
+      </a>
+    </div>
+  </div><!-- /mobile menu -->
+</header>
+
+<!-- Hamburger toggle script (inline so it works standalone) -->
+<script>
+(function () {
+  const btn  = document.getElementById('hamburger-btn');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen  = document.getElementById('icon-open');
+  const iconClose = document.getElementById('icon-close');
+
+  btn.addEventListener('click', function () {
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', isOpen);
+    iconOpen.classList.toggle('hidden', !isOpen);
+    iconClose.classList.toggle('hidden', isOpen);
+    btn.setAttribute('aria-expanded', String(!isOpen));
+  });
+})();
+</script>
