@@ -10,6 +10,40 @@ $adminTitle      = 'Services';
 $adminActivePage = 'services';
 $action          = $_GET['action'] ?? 'list';
 $editId          = (int)($_GET['id'] ?? 0);
+$UPLOAD_DIR      = __DIR__ . '/../uploads/';
+
+// Ensure 'image' column exists in services table
+$colCheck = mysqli_query($conn, "SHOW COLUMNS FROM `services` LIKE 'image'");
+if ($colCheck && mysqli_num_rows($colCheck) === 0) {
+    mysqli_query($conn, "ALTER TABLE `services` ADD COLUMN `image` VARCHAR(255) DEFAULT NULL AFTER `icon`");
+}
+
+function uploadServiceImage(): string {
+    global $UPLOAD_DIR;
+    if (empty($_FILES['image']['name'])) return '';
+    $allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    $ftype = $_FILES['image']['type'] ?? '';
+    if (!in_array($ftype, $allowed_types)) return '';
+    // Size limit: 5MB
+    if ($_FILES['image']['size'] > 5 * 1024 * 1024) return '';
+    $ext  = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+    $safe = ['jpg','jpeg','png','webp','gif'];
+    if (!in_array($ext, $safe)) return '';
+    if (!is_dir($UPLOAD_DIR)) {
+        @mkdir($UPLOAD_DIR, 0755, true);
+    }
+    $name = 'serv_' . uniqid('', true) . '.' . $ext;
+    if (move_uploaded_file($_FILES['image']['tmp_name'], $UPLOAD_DIR . $name)) {
+        return 'uploads/' . $name;
+    }
+    return '';
+}
+
+function getImgSrc(?string $path): string {
+    if (empty($path)) return '';
+    if (strpos($path, 'uploads/') === 0) return '../' . $path;
+    return '../uploads/' . $path;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $act      = $_POST['act']              ?? '';
@@ -26,19 +60,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($title)) {
             $_SESSION['flash'] = ['msg' => 'Title is required.', 'type' => 'error'];
         } elseif ($act === 'add') {
+            $img = uploadServiceImage();
+            $imgSql = $img ? "'$img'" : 'NULL';
             mysqli_query($conn,
                 "INSERT INTO `services`
-                    (`title`,`slug`,`description`,`icon`,`full_description`,`sub_services`,`use_cases`,`meta_description`)
+                    (`title`,`slug`,`description`,`icon`,`image`,`full_description`,`sub_services`,`use_cases`,`meta_description`)
                  VALUES
-                    ('$title','$slug','$desc','$icon','$fullDesc','$subs','$cases','$meta')");
+                    ('$title','$slug','$desc','$icon',$imgSql,'$fullDesc','$subs','$cases','$meta')");
             $_SESSION['flash'] = ['msg' => 'Service added.', 'type' => 'success'];
         } else {
             $id = (int)($_POST['id'] ?? 0);
+            $img = uploadServiceImage();
+            $removeImg = !empty($_POST['remove_image']);
+            $imgSql = '';
+            if ($img) {
+                $imgSql = ", `image`='$img'";
+            } elseif ($removeImg) {
+                $imgSql = ", `image`=NULL";
+            }
             mysqli_query($conn,
                 "UPDATE `services`
                  SET `title`='$title', `slug`='$slug', `description`='$desc', `icon`='$icon',
                      `full_description`='$fullDesc', `sub_services`='$subs',
-                     `use_cases`='$cases', `meta_description`='$meta'
+                     `use_cases`='$cases', `meta_description`='$meta' $imgSql
                  WHERE `id`=$id");
             $_SESSION['flash'] = ['msg' => 'Service updated.', 'type' => 'success'];
         }
@@ -95,19 +139,19 @@ $isFormView = ($action === 'add' || ($action === 'edit' && $editRow));
       <?= ($action === 'edit') ? 'Edit Service: ' . h($editRow['title']) : 'Add New Service' ?>
     </h2>
     <p class="text-slate-500 text-sm mt-1">
-      <?= ($action === 'edit') ? 'Update service specifications, technical deliverables, and SEO.' : 'Create a new enterprise IT service for your website catalogue.' ?>
+      <?= ($action === 'edit') ? 'Update service specifications, technical deliverables, and hero background.' : 'Create a new enterprise IT service for your website catalogue.' ?>
     </p>
   </div>
 
   <!-- Form Card -->
   <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-    <form method="POST" class="space-y-6">
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
       <input type="hidden" name="act" value="<?= ($action === 'edit') ? 'edit' : 'add' ?>"/>
       <?php if ($action === 'edit' && $editRow): ?>
       <input type="hidden" name="id" value="<?= (int)$editRow['id'] ?>"/>
       <?php endif; ?>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Service Title <span class="text-[#5d1d1f]">*</span></label>
           <input name="title" type="text" required placeholder="Datacenter Infrastructure"
@@ -120,12 +164,38 @@ $isFormView = ($action === 'add' || ($action === 'edit' && $editRow));
           <input name="description" type="text" placeholder="One-line summary for cards..."
                  value="<?= h($editRow['description'] ?? '') ?>"
                  class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#5d1d1f]/40 focus:border-[#5d1d1f] transition-all"/>
+          <p class="text-slate-400 text-xs mt-1">Displayed on overview cards and summary listings</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">
+            Hero Background Image <?= ($action === 'edit') ? '<span class="font-normal text-slate-400">(leave empty to keep current)</span>' : '' ?>
+          </label>
+          <?php if (!empty($editRow['image'])): ?>
+          <div class="mb-3 flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+            <img src="<?= h(getImgSrc($editRow['image'])) ?>" alt="Current image" class="w-16 h-12 object-cover rounded-lg border border-slate-200 shadow-sm" onerror="this.onerror=null;this.src='../assets/images/hero_datacenter.png';"/>
+            <div class="min-w-0 flex-1">
+              <span class="block text-xs font-semibold text-slate-700 truncate"><?= h($editRow['image']) ?></span>
+              <label class="inline-flex items-center gap-1.5 mt-1 text-xs text-rose-600 cursor-pointer font-medium">
+                <input type="checkbox" name="remove_image" value="1" class="rounded text-rose-600 focus:ring-rose-500"> Remove background image
+              </label>
+            </div>
+          </div>
+          <?php endif; ?>
+          <input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                 class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-500
+                        file:mr-3 file:py-1.5 file:px-4 file:rounded-lg file:border-0
+                        file:bg-[#5d1d1f]/10 file:text-[#5d1d1f] file:font-bold file:text-xs cursor-pointer"/>
+          <p class="text-slate-400 text-xs mt-1">Upload banner background for this service hero section (JPG, PNG, WebP up to 5MB).</p>
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Icon Identifier</label>
           <input name="icon" type="text" placeholder="icon-datacenter"
                  value="<?= h($editRow['icon'] ?? '') ?>"
                  class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#5d1d1f]/40 focus:border-[#5d1d1f] transition-all"/>
+          <p class="text-slate-400 text-xs mt-1">E.g., <code>icon-datacenter</code>, <code>icon-cabling</code>, <code>icon-camera</code></p>
         </div>
       </div>
 
@@ -220,6 +290,7 @@ $isFormView = ($action === 'add' || ($action === 'edit' && $editRow));
         <thead class="bg-slate-50 border-b border-slate-100">
           <tr>
             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">#</th>
+            <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Image</th>
             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Title</th>
             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Slug</th>
             <th class="px-4 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Short Description</th>
@@ -232,6 +303,32 @@ $isFormView = ($action === 'add' || ($action === 'edit' && $editRow));
           <?php foreach ($rows as $row): ?>
           <tr class="hover:bg-slate-50/80 transition-colors">
             <td class="px-4 py-3 text-slate-400 font-mono text-xs"><?= (int)$row['id'] ?></td>
+            <td class="px-4 py-3">
+              <?php 
+                $imgThumb = !empty($row['image']) ? getImgSrc($row['image']) : '';
+                if (empty($imgThumb)) {
+                    $slugMap = [
+                        'datacenter-infrastructure' => '../uploads/serv_datacenter.png',
+                        'cabling'                   => '../uploads/serv_cabling.png',
+                        'ip-surveillance'           => '../uploads/serv_surveillance.png',
+                        'cloud-services'            => '../uploads/serv_cloud.png',
+                        'wireless-microwave'        => '../uploads/bg_parallax_network.png',
+                        'switching-routing'         => '../uploads/noc_center.png',
+                        'firewall-utm'              => '../uploads/hero_enterprise.png',
+                        'vpn-solutions'             => '../uploads/itech_expert.png',
+                        'internet-services'         => '../uploads/mnc_hero.png',
+                    ];
+                    if (!empty($row['slug']) && isset($slugMap[$row['slug']])) {
+                        $imgThumb = $slugMap[$row['slug']];
+                    }
+                }
+              ?>
+              <?php if (!empty($imgThumb)): ?>
+              <img src="<?= h($imgThumb) ?>" alt="" class="w-12 h-9 object-cover rounded-lg border border-slate-200 bg-slate-100 shadow-sm" onerror="this.onerror=null;this.src='../assets/images/hero_datacenter.png';"/>
+              <?php else: ?>
+              <div class="w-12 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-300 text-xs font-bold">No img</div>
+              <?php endif; ?>
+            </td>
             <td class="px-4 py-3 font-bold text-[#1a1a2e] whitespace-nowrap">
               <div class="flex items-center gap-2.5">
                 <div class="w-6 h-6 rounded-lg bg-[#5d1d1f]/10 text-[#5d1d1f] flex items-center justify-center text-[10px] font-black">

@@ -20,12 +20,36 @@ if (!$res || mysqli_num_rows($res) === 0) {
 }
 $svc = mysqli_fetch_assoc($res);
 
+// ── Determine Hero Background Image ──────────────────────────
+$heroBg = '';
+if (!empty($svc['image'])) {
+    $heroBg = (strpos($svc['image'], 'uploads/') === 0) ? SITE_URL . $svc['image'] : SITE_URL . 'uploads/' . $svc['image'];
+} elseif (!empty($svc['icon']) && strpos($svc['icon'], '.') !== false) {
+    $heroBg = (strpos($svc['icon'], 'uploads/') === 0) ? SITE_URL . $svc['icon'] : SITE_URL . 'uploads/' . $svc['icon'];
+} else {
+    // Smart fallback by slug
+    $slugMap = [
+        'datacenter-infrastructure' => 'serv_datacenter.png',
+        'cabling'                   => 'serv_cabling.png',
+        'ip-surveillance'           => 'serv_surveillance.png',
+        'cloud-services'            => 'serv_cloud.png',
+        'wireless-microwave'        => 'bg_parallax_network.png',
+        'switching-routing'         => 'noc_center.png',
+        'firewall-utm'              => 'hero_enterprise.png',
+        'vpn-solutions'             => 'itech_expert.png',
+        'internet-services'         => 'mnc_hero.png',
+    ];
+    if (!empty($svc['slug']) && isset($slugMap[$svc['slug']])) {
+        $heroBg = SITE_URL . 'uploads/' . $slugMap[$svc['slug']];
+    }
+}
+
 // ── SEO ───────────────────────────────────────────────────────
 $title           = h($svc['title']);
 $metaTitle       = $svc['title'] . ' Services | ' . SITE_NAME;
 $metaDescription = $svc['meta_description'] ?? ($svc['description'] ?: DEFAULT_META_DESCRIPTION);
 $canonicalUrl    = SITE_URL . 'public/service.php?slug=' . urlencode($slug);
-$metaOgImage     = !empty($svc['icon']) && strpos($svc['icon'], '.') !== false ? SITE_URL . 'uploads/' . $svc['icon'] : SITE_URL . 'assets/images/hero_datacenter.png';
+$metaOgImage     = !empty($heroBg) ? $heroBg : SITE_URL . 'assets/images/hero_datacenter.png';
 
 // ── Related services ─────────────────────────────────────────
 $related = [];
@@ -58,12 +82,13 @@ require_once __DIR__ . '/../includes/header.php';
 
 <!-- ── Hero Banner ───────────────────────────────────────────── -->
 <section class="relative bg-[#0f172a] overflow-hidden py-24 lg:py-32">
-  <?php if (!empty($svc['icon']) && strpos($svc['icon'], '.') !== false): ?>
-    <img src="<?= SITE_URL ?>uploads/<?= h($svc['icon']) ?>" alt="<?= $title ?>" class="absolute inset-0 w-full h-full object-cover opacity-20"/>
+  <?php if (!empty($heroBg)): ?>
+    <img src="<?= h($heroBg) ?>" alt="<?= $title ?>" class="absolute inset-0 w-full h-full object-cover opacity-30 filter brightness-90"/>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/85 to-[#0f172a]/50"></div>
   <?php else: ?>
     <div class="absolute inset-0" style="background:radial-gradient(circle,rgba(93,29,31,.2) 1px,transparent 1px);background-size:28px 28px" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/80 to-[#0f172a]/40"></div>
   <?php endif; ?>
-  <div class="absolute inset-0 bg-gradient-to-r from-[#0f172a] via-[#0f172a]/80 to-[#0f172a]/40"></div>
   <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#5d1d1f]/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
 
   <div class="relative max-w-screen-xl mx-auto px-6 lg:px-10">
