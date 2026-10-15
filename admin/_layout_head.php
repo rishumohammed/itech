@@ -33,9 +33,8 @@ if (is_admin()) {
       overflow-x: hidden;
     }
     body { font-family: 'Inter', sans-serif; }
-    .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200; }
 
-    /* Custom subtle scrollbar for table container */
+    /* Custom subtle scrollbar for table containers */
     .overflow-x-auto {
       -webkit-overflow-scrolling: touch;
     }
@@ -67,25 +66,32 @@ if (is_admin()) {
     }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex overflow-x-hidden antialiased">
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased overflow-x-hidden">
 
-<!-- ══ SIDEBAR ════════════════════════════════════════════════ -->
-<aside class="w-64 h-screen sticky top-0 bg-[#1a1a2e] flex flex-col shrink-0 shadow-xl z-30 overflow-y-auto">
+<!-- Mobile Backdrop -->
+<div id="sidebarBackdrop" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden transition-opacity" onclick="toggleSidebar()"></div>
+
+<!-- ══ FIXED SIDEBAR ══════════════════════════════════════════ -->
+<aside id="adminSidebar"
+       class="fixed inset-y-0 left-0 w-64 bg-[#1a1a2e] flex flex-col z-40 shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 -translate-x-full overflow-y-auto">
 
   <!-- Logo -->
-  <div class="px-6 py-5 border-b border-white/10 shrink-0">
+  <div class="px-6 py-5 border-b border-white/10 shrink-0 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-[#5d1d1f] flex items-center justify-center shadow border border-[#efac3a]/20">
         <span class="text-[#efac3a] font-extrabold text-sm leading-none">IT</span>
       </div>
       <div>
         <p class="text-white font-extrabold text-sm leading-tight tracking-tight">I Tech IT</p>
-        <p class="text-slate-500 text-xs">Admin Panel</p>
+        <p class="text-slate-400 text-xs">Admin Panel</p>
       </div>
     </div>
+    <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white p-1">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
   </div>
 
-  <!-- Nav -->
+  <!-- Navigation Links -->
   <nav class="flex-1 px-3 py-5 space-y-1">
     <?php foreach ($navItems as $key => $item):
       $isActive = ($adminActivePage === $key);
@@ -103,10 +109,10 @@ if (is_admin()) {
     <?php endforeach; ?>
   </nav>
 
-  <!-- View site + version -->
+  <!-- View public site -->
   <div class="px-3 py-4 border-t border-white/10 shrink-0">
     <a href="../public/index.php" target="_blank"
-       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-slate-500 text-xs font-medium hover:text-white hover:bg-white/5 transition-all duration-200">
+       class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-slate-400 text-xs font-medium hover:text-white hover:bg-white/5 transition-all duration-200">
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
       </svg>
@@ -115,12 +121,18 @@ if (is_admin()) {
   </div>
 </aside>
 
-<!-- ══ MAIN wrapper ═══════════════════════════════════════════ -->
-<div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+<!-- ══ MAIN CONTENT WRAPPER ════════════════════════════════════ -->
+<div class="lg:ml-64 min-h-screen flex flex-col min-w-0 bg-slate-100 overflow-x-hidden">
 
   <!-- TOPBAR -->
-  <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
-    <h1 class="text-lg font-black text-[#1a1a2e] truncate"><?= htmlspecialchars($adminTitle) ?></h1>
+  <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
+    <div class="flex items-center gap-3 min-w-0">
+      <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none" aria-label="Toggle navigation">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <h1 class="text-lg font-black text-[#1a1a2e] truncate"><?= htmlspecialchars($adminTitle) ?></h1>
+    </div>
+
     <div class="flex items-center gap-4 shrink-0">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-full bg-[#5d1d1f] flex items-center justify-center border border-[#efac3a]/20">
@@ -138,7 +150,7 @@ if (is_admin()) {
   <!-- Flash messages -->
   <?php if (!empty($_SESSION['flash'])): ?>
   <?php $flash = $_SESSION['flash']; unset($_SESSION['flash']); ?>
-  <div class="mx-8 mt-5 px-5 py-3 rounded-xl text-sm font-semibold
+  <div class="mx-4 sm:mx-8 mt-5 px-5 py-3 rounded-xl text-sm font-semibold
               <?= $flash['type'] === 'success'
                     ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
                     : 'bg-red-50 border border-red-200 text-red-800' ?>">
@@ -147,4 +159,4 @@ if (is_admin()) {
   <?php endif; ?>
 
   <!-- Page content starts here -->
-  <main class="flex-1 px-8 py-7 min-w-0">
+  <main class="flex-1 px-4 sm:px-8 py-7 min-w-0">

@@ -101,18 +101,45 @@ require_once __DIR__ . '/_layout_head.php';
     </table>
   </div>
 
-  <!-- Pagination -->
+  <!-- Pagination Footer -->
   <?php if ($pages > 1): ?>
-  <div class="px-6 py-4 border-t border-slate-100 flex items-center gap-2">
-    <?php for ($p = 1; $p <= $pages; $p++): ?>
-    <a href="?page=<?= $p ?>"
-       class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all
-              <?= $p === $page
-                    ? 'bg-[#5d1d1f] text-[#efac3a] border border-[#efac3a]/20'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200' ?>">
-      <?= $p ?>
-    </a>
-    <?php endfor; ?>
+  <div class="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+    <div class="text-xs text-slate-500 font-medium">
+      Showing <strong class="text-slate-800 font-bold"><?= $total > 0 ? ($offset + 1) : 0 ?></strong> to <strong class="text-slate-800 font-bold"><?= min($offset + $perPage, $total) ?></strong> of <strong class="text-slate-800 font-bold"><?= $total ?></strong> enquiries
+    </div>
+    <div class="flex items-center gap-1">
+      <?php if ($page > 1): ?>
+        <a href="?page=<?= $page - 1 ?>" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+          &larr; Prev
+        </a>
+      <?php else: ?>
+        <span class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-bold text-slate-400 cursor-not-allowed">
+          &larr; Prev
+        </span>
+      <?php endif; ?>
+
+      <?php for ($p = 1; $p <= $pages; $p++): ?>
+        <?php if ($p == $page): ?>
+          <span class="px-3 py-1.5 rounded-lg bg-[#5d1d1f] text-white text-xs font-bold shadow-sm">
+            <?= $p ?>
+          </span>
+        <?php else: ?>
+          <a href="?page=<?= $p ?>" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+            <?= $p ?>
+          </a>
+        <?php endif; ?>
+      <?php endfor; ?>
+
+      <?php if ($page < $pages): ?>
+        <a href="?page=<?= $page + 1 ?>" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+          Next &rarr;
+        </a>
+      <?php else: ?>
+        <span class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-100 text-xs font-bold text-slate-400 cursor-not-allowed">
+          Next &rarr;
+        </span>
+      <?php endif; ?>
+    </div>
   </div>
   <?php endif; ?>
 
