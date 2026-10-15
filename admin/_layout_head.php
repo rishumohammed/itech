@@ -124,16 +124,15 @@ if (is_admin()) {
 <!-- ══ MAIN CONTENT WRAPPER ════════════════════════════════════ -->
 <div class="lg:ml-64 min-h-screen flex flex-col min-w-0 bg-slate-100 overflow-x-hidden">
 
-  <!-- TOPBAR -->
-  <header class="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-20">
-    <div class="flex items-center gap-3 min-w-0">
+  <!-- TOPBAR (Fixed) -->
+  <header class="fixed top-0 left-0 lg:left-64 right-0 h-16 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between shadow-sm z-30">
+    <div class="flex items-center gap-3">
       <button type="button" onclick="toggleSidebar()" class="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 focus:outline-none" aria-label="Toggle navigation">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <h1 class="text-lg font-black text-[#1a1a2e] truncate"><?= htmlspecialchars($adminTitle) ?></h1>
     </div>
 
-    <div class="flex items-center gap-4 shrink-0">
+    <div class="flex items-center gap-4 ml-auto">
       <div class="flex items-center gap-2">
         <div class="w-7 h-7 rounded-full bg-[#5d1d1f] flex items-center justify-center border border-[#efac3a]/20">
           <span class="text-[#efac3a] text-xs font-bold"><?= strtoupper(substr($adminUser, 0, 1)) ?></span>
@@ -147,16 +146,16 @@ if (is_admin()) {
     </div>
   </header>
 
+  <!-- Page content starts here -->
+  <main class="flex-1 px-4 sm:px-8 pt-20 pb-10 min-w-0">
+
   <!-- Flash messages -->
   <?php if (!empty($_SESSION['flash'])): ?>
   <?php $flash = $_SESSION['flash']; unset($_SESSION['flash']); ?>
-  <div class="mx-4 sm:mx-8 mt-5 px-5 py-3 rounded-xl text-sm font-semibold
+  <div class="mb-6 px-5 py-3 rounded-xl text-sm font-semibold
               <?= $flash['type'] === 'success'
                     ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
                     : 'bg-red-50 border border-red-200 text-red-800' ?>">
     <?= htmlspecialchars($flash['msg']) ?>
   </div>
   <?php endif; ?>
-
-  <!-- Page content starts here -->
-  <main class="flex-1 px-4 sm:px-8 py-7 min-w-0">
